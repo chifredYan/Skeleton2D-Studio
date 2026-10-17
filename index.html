@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>Skeleton2D Studio — Godot 骨骼动画制作</title>
+<link rel="stylesheet" href="./src/style.css?v=20261012y">
+</head>
+<body>
+<header id="toolbar">
+  <span class="logo">Skeleton2D Studio <span id="appver" class="muted" style="font-size:11px;font-weight:400"></span></span>
+  <button id="btn-undo" title="Ctrl+Z">↶ 撤销</button>
+  <button id="btn-redo" title="Ctrl+Y">↷ 重做</button>
+  <span class="sep"></span>
+  <button id="btn-tex">上传贴图 (PNG)</button>
+  <input type="file" id="file-tex" accept="image/png,image/*" multiple hidden>
+  <button id="btn-quads" title="显示/隐藏骨骼色块">色块:开</button>
+  <label class="chk" title="全部色块的透明度（0%~100%），一起调整">
+    <input type="range" id="qalpha-slider" min="0" max="1" step="0.05" value="0.25" style="width:80px">
+    <span id="qalpha-val" class="muted">25%</span>
+  </label>
+  <button id="btn-bones" title="显示/隐藏骨骼线与关节">骨骼:开</button>
+  <button id="btn-texvis" title="显示/隐藏全部贴图">贴图:开</button>
+  <label class="chk" title="开启后显示并启用第二把武器（左手）"><input type="checkbox" id="chk-dual"> 双武器</label>
+  <select id="pose-preset" title="一键应用预设动作（覆盖当前动画的关键帧）">
+    <option value="">姿势预设…</option>
+  </select>
+  <button id="btn-reset" title="重置为默认工程">重置工程</button>
+  <span class="sep"></span>
+  <button id="btn-prev" title="←">⏮</button>
+  <button id="btn-play" title="空格">▶ / ⏸</button>
+  <button id="btn-stop">⏹</button>
+  <button id="btn-next" title="→">⏭</button>
+  <span class="sep"></span>
+  <label class="chk" title="视口缩放：100% = 默认大小（1:1），范围 20% ~ 1000%。也可用鼠标滚轮缩放">缩放
+    <input type="range" id="zoom-slider" min="20" max="1000" step="10" value="100" style="width:140px">
+    <span id="zoom-val" class="muted">100%</span>
+  </label>
+  <span class="flex1"></span>
+  <span id="status" class="muted"></span>
+</header>
+<main id="layout">
+  <aside id="tree" class="panel"></aside>
+  <section id="center">
+    <div id="viewport-wrap"><canvas id="viewport"></canvas></div>
+    <div id="timeline" class="panel"></div>
+  </section>
+  <aside id="inspector" class="panel"></aside>
+</main>
+<script type="module" src="./src/main.js?v=20261012y"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "skeleton2d-studio",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Web-based Godot Skeleton2D animation authoring tool",
+  "scripts": {
+    "serve": "node serve.mjs",
+    "validate": "node tools/build-and-validate.mjs"
+  }
+}
