@@ -1,0 +1,14 @@
+# 自动保存的工程数据（个人工作状态，含贴图 base64，不入库）
+.autosave/
+
+# Godot 导出验证的临时产物
+.godot-validate/
+
+# 依赖与日志
+node_modules/
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
