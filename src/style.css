@@ -61,6 +61,7 @@ button:disabled { opacity: .5; cursor: default; }
 .key { color: var(--accent); font-size: 12px; line-height: 20px; }
 .chk { display: inline-flex; align-items: center; gap: 3px; cursor: pointer; }
 .chk.big { font-size: 14px; margin: 6px 0; }
+.chk-row { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 4px 0 2px; }
 
 /* 属性面板 */
 #inspector h3 { font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--accent); }

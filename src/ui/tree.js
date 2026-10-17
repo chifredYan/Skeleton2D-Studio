@@ -1,5 +1,5 @@
 // ui/tree.js — 左侧骨架树（折叠+拖拽换父级） + Dock 管理 + 7 层贴图层级（拖拽调层）
-import { effZ, reparentBone, boneCN } from '../core/model.js?v=20261012y';
+import { effZ, reparentBone, boneCN } from '../core/model.js?v=20261018a';
 
 let dragAtt = null; // {rigId, attId}
 let dragBone = null; // {rigId, boneName}

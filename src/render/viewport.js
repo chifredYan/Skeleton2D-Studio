@@ -2,7 +2,7 @@
 import {
   matIdentity, matTRS, matMul, matApply, matInvert,
   boneRoots, boneChildren, localPoseOf, effZ
-} from '../core/model.js?v=20261012y';
+} from '../core/model.js?v=20261018a';
 
 const D2R = Math.PI / 180;
 
@@ -178,7 +178,9 @@ function drawBones(ctx, worlds, selection, project, flags) {
     const nw = img.naturalWidth, nh = img.naturalHeight;
     const sx = Math.max(0.001, swap ? qwb / nw : L / nw);
     const sy = Math.max(0.001, swap ? L / nh : qwb / nh);
-    const m = matMul(s.w.mat, matTRS(L / 2, 0, s.att.rot, sx, sy));
+    // 水平/垂直反转：负缩放作用在贴图自身局部轴（先镜像再旋转，翻转轴始终跟随贴图）
+    const fx = s.att.flipX ? -1 : 1, fy = s.att.flipY ? -1 : 1;
+    const m = matMul(s.w.mat, matTRS(L / 2, 0, s.att.rot, sx * fx, sy * fy));
     ctx.save();
     ctx.transform(m.a, m.b, m.c, m.d, m.e, m.f);
     if (selection && selection.type === 'att' && selection.attId === s.att.id

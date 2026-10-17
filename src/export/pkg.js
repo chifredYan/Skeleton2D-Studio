@@ -1,6 +1,6 @@
 // export/pkg.js — 组装导出产物（DOM-free）
-import { buildExport } from './tscn.js?v=20261012y';
-import { makeZip, dataURLToBytes, textBytes } from './zip.js?v=20261012y';
+import { buildExport } from './tscn.js?v=20261018a';
+import { makeZip, dataURLToBytes, textBytes } from './zip.js?v=20261018a';
 
 // 返回 { zip: Uint8Array, warnings, meta }
 export function exportProject(project, mode = 'attached') {

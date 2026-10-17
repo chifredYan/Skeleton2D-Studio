@@ -1,13 +1,13 @@
 // main.js — 应用控制器
-import { newProject, samplePose, matInvert, matApply, matMul, matTRS, makeHumanoid, makeWeapon, ensureQuads, ensureLayers, ensureWeapon2 } from './core/model.js?v=20261012y';
-import { computeWorld, drawScene, hitTest, setImagesCache } from './render/viewport.js?v=20261012y';
-import { renderTree } from './ui/tree.js?v=20261012y';
-import { renderTimeline } from './ui/timeline.js?v=20261012y';
-import { renderInspector } from './ui/inspector.js?v=20261012y';
-import { exportProject } from './export/pkg.js?v=20261012y';
-import { textBytes } from './export/zip.js?v=20261012y';
-import { encodeGif } from './export/gif.js?v=20261012y';
-import { POSE_PRESETS } from './core/presets.js?v=20261012y';
+import { newProject, samplePose, matInvert, matApply, matMul, matTRS, makeHumanoid, makeWeapon, ensureQuads, ensureLayers, ensureWeapon2 } from './core/model.js?v=20261018a';
+import { computeWorld, drawScene, hitTest, setImagesCache } from './render/viewport.js?v=20261018a';
+import { renderTree } from './ui/tree.js?v=20261018a';
+import { renderTimeline } from './ui/timeline.js?v=20261018a';
+import { renderInspector } from './ui/inspector.js?v=20261018a';
+import { exportProject } from './export/pkg.js?v=20261018a';
+import { textBytes } from './export/zip.js?v=20261018a';
+import { encodeGif } from './export/gif.js?v=20261018a';
+import { POSE_PRESETS } from './core/presets.js?v=20261018a';
 
 const $ = (id) => document.getElementById(id);
 

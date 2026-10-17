@@ -241,6 +241,8 @@ export function ensureLayers(project) {
       if (a.layer == null) a.layer = defaultLayerOf(a.bone, rig.type, rigId);
       if (a.layer > project.layers.length - 1) a.layer = project.layers.length - 1; // 越界兜底
       if (a.visible == null) a.visible = true; // 贴图显隐（导出按所见状态）
+      if (a.flipX == null) a.flipX = false;    // 水平反转（沿贴图自身 X 轴镜像）
+      if (a.flipY == null) a.flipY = false;    // 垂直反转
     }
   }
 }

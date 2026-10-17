@@ -1,5 +1,5 @@
 // export/tscn.js — 生成 Godot 4.x .tscn 场景（DOM-free）
-import { boneChain, boneRoots, boneChildren, getDockFor, effZ } from '../core/model.js?v=20261012y';
+import { boneChain, boneRoots, boneChildren, getDockFor, effZ } from '../core/model.js?v=20261018a';
 
 const fmtF = (n) => {
   if (!isFinite(n)) n = 0;
@@ -215,6 +215,8 @@ function buildSceneText(project, rig, merges, sceneName) {
       L.push(`position = ${V2(Lb / 2, 0)}`);
       L.push(`rotation = ${fmtF(att.rot * Math.PI / 180)}`);
       L.push(`scale = ${V2(scx, scy)}`);
+      if (att.flipX) L.push('flip_h = true');
+      if (att.flipY) L.push('flip_v = true');
       const alpha = att.alpha == null ? 1 : att.alpha;
       if (alpha < 1) L.push(`self_modulate = Color(1, 1, 1, ${fmtF(alpha)})`);
       L.push(`z_index = ${effZ(att)}`, '');

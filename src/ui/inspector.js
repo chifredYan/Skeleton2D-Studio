@@ -1,5 +1,5 @@
 // ui/inspector.js — 右侧属性面板（动态表单）
-import { boneCN } from '../core/model.js?v=20261012y';
+import { boneCN, defaultLayerOf } from '../core/model.js?v=20261018a';
 
 export function renderInspector(el, app) {
   const p = app.project;
@@ -23,10 +23,21 @@ export function renderInspector(el, app) {
       const atts = rig.attachments.filter(a => a.bone === b.name);
       if (!atts.length) html += `<div class="muted">无（先上传贴图，再点下方添加）</div>`;
       for (const a of atts) {
-        html += `<div class="att-chip ${s.attId === a.id ? 'active' : ''}" data-att="${a.id}">${a.tex}${a.alpha != null && a.alpha < 1 ? ` (${Math.round(a.alpha * 100)}%)` : ''} <button data-delatt="${a.id}" title="删除附件">✕</button></div>`;
+        const flags = `${a.flipX ? ' ⇋' : ''}${a.flipY ? ' ⇵' : ''}${a.visible === false ? ' ·隐藏' : ''}`;
+        html += `<div class="att-chip ${s.attId === a.id ? 'active' : ''}" data-att="${a.id}">${a.tex}${a.alpha != null && a.alpha < 1 ? ` (${Math.round(a.alpha * 100)}%)` : ''}${flags} <button data-delatt="${a.id}" title="删除附件">✕</button></div>`;
       }
       html += `<select id="add-att-tex">${Object.keys(p.textures).map(t => `<option>${t}</option>`).join('')}</select>
       <button data-act="add-att">+ 绑定贴图到此骨</button>`;
+      // —— 贴图属性：作用于该骨骼下当前选中（或第一个）附件 ——
+      if (atts.length) {
+        const cur = atts.find(x => x.id === s.attId) || atts[0];
+        html += `<div class="sec">贴图属性</div>`;
+        if (atts.length > 1) {
+          html += `<label class="fld"><span>当前贴图</span><select id="att-pick">${atts.map(a => `<option value="${a.id}" ${a.id === cur.id ? 'selected' : ''}>${a.tex}</option>`).join('')}</select></label>`;
+        }
+        html += attPropsHTML(cur, p.layers);
+        html += `<div class="hint">反转沿贴图自身轴向镜像；层级数字越大越靠上，同层按 z 排序</div>`;
+      }
     }
   } else if (s.type === 'att') {
     const rig = p.rigs[s.rigId];
@@ -34,16 +45,10 @@ export function renderInspector(el, app) {
     if (a) {
       html += `<h3>贴图附件</h3>
       <div class="muted">骨: ${s.rigId}/${a.bone}</div>
-      <label class="chk big"><input type="checkbox" id="att-visible" ${a.visible !== false ? 'checked' : ''}> 显示（视口与导出按此状态）</label>
       <select id="att-tex">${Object.keys(p.textures).map(t => `<option ${t === a.tex ? 'selected' : ''}>${t}</option>`).join('')}</select>
-      ${num('旋转 °', 'rot', a.rot)}${num('层内顺序 z', 'z', a.z)}
+      ${attPropsHTML(a, p.layers)}
       <div class="hint">贴图已锁定骨骼框：拉伸铺满、边缘与色块框对齐——调骨骼框（选中骨骼拖角点/改色块长宽）即可改变贴图大小，旋转≈90° 时自动换算宽高映射</div>
-      <label class="fld"><span>所在层级</span>
-        <select data-k="layer">${(p.layers || []).map((nm, i) => `<option value="${i}" ${(a.layer == null ? 3 : a.layer) === i ? 'selected' : ''}>L${i} ${nm}</option>`).join('')}</select></label>
       <div class="hint">也可在左侧「贴图层级」面板拖动贴图到目标层；层号越大越靠上</div>
-      <label class="fld"><span>透明度 ${(Math.round((a.alpha == null ? 1 : a.alpha) * 100))}%</span>
-        <input type="range" min="0" max="1" step="0.05" data-k="alpha" value="${a.alpha == null ? 1 : a.alpha}" data-alpha-label></label>
-      <div class="hint">调低透明度便于观察骨骼与色块</div>
       <button data-act="del-att">删除附件</button>`;
     }
   } else if (s.type === 'dock') {
@@ -88,6 +93,46 @@ function num(label, key, val) {
   return `<label class="fld"><span>${label}</span><input type="number" step="any" data-k="${key}" value="${(+val).toFixed(2).replace(/\.00$/, '').replace(/(\.\d)0$/, '$1')}"></label>`;
 }
 
+function fmtNum(v) {
+  const n = +v;
+  if (!isFinite(n)) return '0';
+  return String(Math.round(n * 100) / 100);
+}
+
+// 贴图附件属性组：旋转 / 水平反转 / 垂直反转 / 显示 / 透明度 / 层级 / 层内顺序
+// 统一用 data-attprop 绑定，骨骼面板与附件面板共用同一套控件
+function attPropsHTML(a, layers) {
+  const alpha = a.alpha == null ? 1 : a.alpha;
+  const layer = a.layer == null ? 3 : a.layer;
+  return `
+  <label class="fld"><span>旋转 °</span><input type="number" step="any" data-attprop="rot" value="${fmtNum(a.rot)}"></label>
+  <div class="chk-row">
+    <label class="chk"><input type="checkbox" data-attprop="flipX" ${a.flipX ? 'checked' : ''} title="沿贴图自身 X 轴镜像">水平反转 ⇋</label>
+    <label class="chk"><input type="checkbox" data-attprop="flipY" ${a.flipY ? 'checked' : ''} title="沿贴图自身 Y 轴镜像">垂直反转 ⇵</label>
+  </div>
+  <label class="chk big"><input type="checkbox" data-attprop="visible" ${a.visible !== false ? 'checked' : ''}> 显示（视口与导出按此状态）</label>
+  <label class="fld"><span data-attalpha-label>透明度 ${Math.round(alpha * 100)}%</span>
+    <input type="range" min="0" max="1" step="0.05" data-attprop="alpha" value="${alpha}"></label>
+  <label class="fld"><span>所在层级</span>
+    <select data-attprop="layer">${(layers || []).map((nm, i) => `<option value="${i}" ${layer === i ? 'selected' : ''}>L${i} ${nm}</option>`).join('')}</select></label>
+  <label class="fld"><span>层内顺序 z</span><input type="number" step="1" data-attprop="z" value="${a.z | 0}"></label>`;
+}
+
+// 当前可编辑的附件：附件选中态取自身；骨骼选中态取该骨骼下 s.attId 或第一个附件
+function currentAtt(app) {
+  const s = app.selection || {};
+  const rig = s.rigId ? app.project.rigs[s.rigId] : null;
+  if (!rig) return null;
+  if (s.type === 'att') return rig.attachments.find(x => x.id === s.attId) || null;
+  if (s.type === 'bone') {
+    const b = rig.bones.find(x => x.id === s.boneId);
+    if (!b) return null;
+    const list = rig.attachments.filter(x => x.bone === b.name);
+    return list.find(x => x.id === s.attId) || list[0] || null;
+  }
+  return null;
+}
+
 function bindInspector(el, app) {
   const s = app.selection;
   el.querySelectorAll('input[data-k], select[data-k]').forEach(inp => {
@@ -127,16 +172,29 @@ function bindInspector(el, app) {
   const bind = (sel, fn) => { const n = el.querySelector(sel); if (n) n.onchange = fn; };
   const click = (sel, fn) => { const n = el.querySelector(sel); if (n) n.onclick = fn; };
 
-  // 透明度滑条：input 实时预览，change 才入历史
-  el.querySelectorAll('input[data-alpha-label]').forEach(inp => {
-    inp.oninput = () => {
-      if (s.type !== 'att') return;
-      const a = app.project.rigs[s.rigId].attachments.find(x => x.id === s.attId);
+  // —— 贴图属性（data-attprop）：骨骼面板快捷区与附件面板共用同一套控件 ——
+  el.querySelectorAll('[data-attprop]').forEach(inp => {
+    const k = inp.dataset.attprop;
+    const write = () => {
+      const a = currentAtt(app);
       if (!a) return;
-      a.alpha = +inp.value;
-      inp.closest('.fld').querySelector('span').textContent = `透明度 ${Math.round(a.alpha * 100)}%`;
-      app.redraw();
+      if (k === 'flipX' || k === 'flipY' || k === 'visible') a[k] = inp.checked;
+      else if (k === 'layer') a.layer = Math.max(0, Math.min((app.project.layers || []).length - 1, parseInt(inp.value, 10) || 0));
+      else if (k === 'z') a.z = Math.round(parseFloat(inp.value) || 0);
+      else a[k] = parseFloat(inp.value) || 0;
+      if (k === 'alpha') {
+        const lab = el.querySelector('[data-attalpha-label]');
+        if (lab) lab.textContent = `透明度 ${Math.round((a.alpha == null ? 1 : a.alpha) * 100)}%`;
+      }
     };
+    if (inp.type === 'range') {
+      // 拖动实时预览（不重渲染，避免控件失焦），松手才提交并入历史
+      inp.onpointerdown = () => app.pushHistory();
+      inp.oninput = () => { write(); app.redraw(); };
+      inp.onchange = () => { write(); app.changed(); };
+    } else {
+      inp.onchange = () => { app.pushHistory(); write(); app.changed(); };
+    }
   });
 
   if (s.type === 'bone') {
@@ -144,6 +202,8 @@ function bindInspector(el, app) {
       if (ev.target.dataset.delatt) return;
       app.selection.attId = n.dataset.att; app.selection.type = 'att'; app.changed();
     });
+    // 骨骼面板「当前贴图」切换：仅切 attId，保持骨骼选中态，下方属性组随之切换
+    bind('#att-pick', (e) => { app.selection.attId = e.target.value; app.changed(); });
     el.querySelectorAll('[data-delatt]').forEach(n => n.onclick = () => {
       app.pushHistory();
       const rig = app.project.rigs[s.rigId];
@@ -160,7 +220,7 @@ function bindInspector(el, app) {
       // 竖版图（人物立绘）默认转 90°——长边对齐骨骼长度方向，避免适配过小
       const img = app.images.get(tex);
       const upright = img && img.naturalHeight > img.naturalWidth;
-      rig.attachments.push({ id: 'a' + Date.now() % 100000, bone: b.name, tex, x: 0, y: 0, rot: upright ? 90 : 0, scale: 1, z: rig.attachments.length, alpha: 1, iw: img && img.naturalWidth || 0, ih: img && img.naturalHeight || 0 });
+      rig.attachments.push({ id: 'a' + Date.now() % 100000, bone: b.name, tex, x: 0, y: 0, rot: upright ? 90 : 0, scale: 1, z: rig.attachments.length, alpha: 1, visible: true, flipX: false, flipY: false, layer: defaultLayerOf(b.name, rig.type, rig.id), iw: img && img.naturalWidth || 0, ih: img && img.naturalHeight || 0 });
       app.selection.type = 'att'; app.selection.attId = rig.attachments[rig.attachments.length - 1].id;
       app.changed();
     });
@@ -169,12 +229,6 @@ function bindInspector(el, app) {
       app.pushHistory();
       const a = app.project.rigs[s.rigId].attachments.find(x => x.id === s.attId);
       if (a) a.tex = e.target.value;
-      app.changed();
-    });
-    bind('#att-visible', (e) => {
-      app.pushHistory();
-      const a = app.project.rigs[s.rigId].attachments.find(x => x.id === s.attId);
-      if (a) a.visible = e.target.checked;
       app.changed();
     });
     click('[data-act="del-att"]', () => {
